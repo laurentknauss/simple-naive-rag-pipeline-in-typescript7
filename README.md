@@ -1,10 +1,16 @@
 # Simple Naive RAG Pipeline (TypeScript 7)
 
-A minimal, readable implementation of a **naive RAG pipeline** (Retrieval-Augmented Generation) in TypeScript, built with LangChain.js and OpenAI. Type-checked with **TypeScript 7 (tsgo)** and covered by a **Vitest** unit suite.
+A minimal, readable implementation of a **naive RAG pipeline** (Retrieval-Augmented Generation) in TypeScript, built with LangChain.js and OpenAI.
 
-The goal of this repository is to demonstrate the full RAG pipeline end-to-end — from a raw PDF to a grounded answer — in ~100 lines of readable code, with **no server, no database, no external vector store** (pure in-memory index).
+Type-checked with **TypeScript 7 (tsgo)** and covered by a **Vitest** unit suite.
+
+---
 
 ## 🧩 Naive RAG pipeline (7 explicit steps)
+
+The goal: demonstrate the full RAG pipeline end-to-end — from a raw PDF to a grounded answer — in ~100 lines of readable code.
+
+**No server. No database. No external vector store.** (pure in-memory index)
 
 Each step lists the tool used by this codebase (npm package → class) and the file where it lives:
 
@@ -18,18 +24,28 @@ Each step lists the tool used by this codebase (npm package → class) and the f
 | 6 | **Augmentation** | Inject the context into the prompt (`{context}` + `{question}`) | `@langchain/core/prompts` → `ChatPromptTemplate` | `rag.ts` (`RAG_PROMPT_TEMPLATE`) |
 | 7 | **Generation** | LLM answer restricted to the context | `@langchain/openai` → `ChatOpenAI` (`gpt-4o-mini`) + `StringOutputParser` | `rag.ts` (`buildRagChain`) |
 
+### Code layout
+
 The logic is split into two files so it stays testable:
 
 - `rag.ts` — the pipeline logic (splitter, vector store, retrieval, prompt, chain)
 - `index.ts` — the CLI entry point (PDF loading, example run)
 
-The prompt enforces a **fidelity guardrail**: if the answer is not in the retrieved context, the model must reply `The document does not contain this information.` instead of hallucinating.
+### Fidelity guardrail
+
+The prompt enforces a simple rule: if the answer is not in the retrieved context, the model must reply `The document does not contain this information.` — no hallucination.
+
+---
 
 ## 📄 Example document
 
-The demo runs on **`data/NYSE_PLTR_2024.pdf`**: the **Palantir Technologies (NYSE: PLTR) Annual Report on Form 10-K for fiscal year 2024**, filed with the U.S. SEC. It is a **public, real-world document** (145 pages, ~640k characters) rich in audited financial figures — e.g. total revenue FY2024: **$2,865,507K (+29% vs FY2023)** — which makes the RAG answer verifiable.
+The demo runs on **`data/NYSE_PLTR_2024.pdf`**: the **Palantir Technologies (NYSE: PLTR) Annual Report on Form 10-K for fiscal year 2024**, filed with the U.S. SEC.
+
+It is a **public, real-world document** (145 pages, ~640k characters) rich in audited financial figures — e.g. total revenue FY2024: **$2,865,507K (+29% vs FY2023)** — which makes the RAG answer verifiable.
 
 > The 10-K is the annual report publicly disclosed by every US public company to the SEC — this file is redistributed here for demonstration purposes.
+
+---
 
 ## 🚀 Setup
 
@@ -47,12 +63,16 @@ cp .env.example .env
 pnpm start
 ```
 
-Expected output (answer grounded in the retrieved chunks):
+### Expected output
+
+Answer grounded in the retrieved chunks:
 
 ```text
 Palantir's total revenue for fiscal year 2024 was $2,865,507K, up 29% from
 $2,225,012K in fiscal year 2023.
 ```
+
+---
 
 ## 🛠️ Scripts
 
@@ -61,6 +81,8 @@ $2,225,012K in fiscal year 2023.
 | `pnpm start` | Run the full pipeline on the example PDF |
 | `pnpm test` | Run the Vitest unit suite (no network calls) |
 | `pnpm typecheck` | Type-check with TypeScript 7 (`tsgo --noEmit`) |
+
+---
 
 ## 📁 Project structure
 
@@ -74,10 +96,14 @@ $2,225,012K in fiscal year 2023.
 └── pnpm-workspace.yaml      # pnpm 11 settings (build approvals)
 ```
 
+---
+
 ## 🔒 Security
 
 - **Secrets are never committed**: the OpenAI key is loaded from `.env` (gitignored).
 - `process.loadEnvFile()` loads the key at runtime; the CLI exits with a clear message if it is missing.
+
+---
 
 ## 📜 License
 
