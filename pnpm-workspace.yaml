@@ -1,0 +1,8 @@
+# pnpm 11 : les réglages pnpm se configurent dans pnpm-workspace.yaml (plus dans package.json)
+# esbuild : utilisé par tsx + vitest → build autorisé
+# hnswlib-node / protobufjs / sharp : peers non utilisés par ce projet (index = MemoryVectorStore) → build bloqué
+allowBuilds:
+  esbuild: true
+  hnswlib-node: false
+  protobufjs: false
+  sharp: false

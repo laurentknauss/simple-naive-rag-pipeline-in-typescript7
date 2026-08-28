@@ -1,0 +1,16 @@
+# Dépendances
+node_modules/
+
+# Secrets — JAMAIS versionner
+.env
+.env.local
+.env.*.local
+
+# Fichiers de config des agents locaux
+AGENTS.md
+
+# Logs
+*.log
+
+# OS
+.DS_Store
