@@ -23,7 +23,7 @@ export const OUT_OF_CONTEXT_REPLY =
   "The document does not contain this information.";
 
 /** Template de prompt : le LLM ne répond QUE depuis le contexte fourni. */
-export const RAG_PROMPT_TEMPLATE = `You are a financial analyst assistant trained to interpret corporate SEC filings. Base your answer only on the retrieved report section.
+export const RAG_PROMPT_TEMPLATE = `You are a financial analyst assistant trained to interpret financial reports and documentations .
 Include specific references to strategic, financial or operational aspects if relevant.
 Answer the user's question using ONLY the context below and with no more than 500 words.
 If the answer is not in the context, respond with: "${OUT_OF_CONTEXT_REPLY}"

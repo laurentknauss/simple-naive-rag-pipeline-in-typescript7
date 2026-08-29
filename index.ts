@@ -11,8 +11,9 @@ import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import chalk from "chalk";
 import * as fs from "fs";
 import * as path from "path";
-import { fileURLToPath } from "url";
 import { buildRagChain, createSplitter, createVectorStore } from "./rag.js";
+import { sanitizePdf } from "./sanitize.js";
+import { fileURLToPath } from "url";
 
 // --- ESM __dirname simulation
 const __filename = fileURLToPath(import.meta.url);
@@ -32,21 +33,26 @@ if (!OPENAI_API_KEY) {
 }
 
 async function main(): Promise<void> {
-  const docPath = "./data/NYSE_PLTR_2024.pdf";
+  const docPath = "./data/fresnillo.pdf";
 
   // --- Étape 1 : ingestion (extraction du texte du PDF) ---
   console.log(chalk.cyan("📄 Loading PDF..."));
   const loader = new PDFLoader(docPath);
   const docs = await loader.load();
 
-  if (!docs.length) {
-    throw new Error("❌ No content extracted from PDF.");
-  }
+  // --- Étape 1.5 : sanitisation anti prompt injection ---
+  // Le PDF est une donnée non fiable : on neutralise balises/tokens
+  // d'injection AVANT chunking et indexation (voir sanitize.ts).
+  console.log(chalk.cyan("🛡️  Sanitizing extracted text..."));
+  const sanitizedDocs = docs.map((doc) => ({
+    ...doc,
+    pageContent: sanitizePdf(doc.pageContent, "fresnillo.pdf"),
+  }));
 
   // --- Étape 2 : chunking ---
   console.log(chalk.cyan("✂️ Splitting into chunks..."));
   const splitter = createSplitter();
-  const chunks = await splitter.splitDocuments(docs);
+  const chunks = await splitter.splitDocuments(sanitizedDocs);
   console.log(chalk.green(`✅ ${chunks.length} chunks ready.`));
 
   // --- Étape 3 : embeddings ---
@@ -66,7 +72,7 @@ async function main(): Promise<void> {
 
   // --- Exemple ---
   const exampleQuestion =
-    "What was Palantir's total revenue for fiscal year 2024, and how does it compare to 2023?";
+    "quel fut  le chiffre pour l EBITDA en valeur  2024 ?";
   console.log(chalk.cyan("\n🤖 Asking: ") + chalk.bold(exampleQuestion));
 
   const response = await ragChain.invoke({ question: exampleQuestion });
